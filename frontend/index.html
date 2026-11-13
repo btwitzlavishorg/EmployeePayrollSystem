@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PayrollCorp - Employee Payroll Management Dashboard</title>
+
+  <!-- Typography: Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- Chart.js (Interactive Charts with pure Canvas fallback) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- Login Screen (shown until authenticated) -->
+<div id="login-screen" class="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="brand-icon login-brand-icon">₹</div>
+      <h1>PayrollCorp</h1>
+      <p>Employee Payroll Management System</p>
+    </div>
+    <form id="login-form" autocomplete="on">
+      <div class="form-group-custom">
+        <label for="login-username">Username</label>
+        <input type="text" id="login-username" name="username" class="form-control-custom" placeholder="Enter username" required autofocus>
+      </div>
+      <div class="form-group-custom">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" name="password" class="form-control-custom" placeholder="Enter password" required>
+      </div>
+      <div id="login-error" class="login-error" hidden></div>
+      <button type="submit" id="login-submit-btn" class="btn-custom btn-primary-custom login-submit-btn">Sign In</button>
+    </form>
+    <div class="login-hint">
+      Demo accounts: <code>admin</code> / <code>admin123</code> &middot; <code>hrmanager</code> / <code>admin123</code>
+    </div>
+  </div>
+</div>
+
+<div id="app-container" style="display:none;">
+
+  <!-- Mobile Sidebar Backdrop -->
+  <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+  <!-- ========================================================================
+       SIDEBAR NAVIGATION
+       ======================================================================== -->
+  <aside class="app-sidebar">
+    <div class="sidebar-brand">
+      <a href="#dashboard" class="brand-wrapper">
+        <div class="brand-icon">₹</div>
+        <div class="brand-text">
+          <span class="brand-name">PayrollCorp</span>
+          <span class="brand-tagline">Enterprise HR & Payroll</span>
+        </div>
+      </a>
+      <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Toggle Sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Core Management</div>
+      <a href="#dashboard" class="nav-item active" data-view="dashboard">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg></span>
+        <span class="nav-label">Dashboard</span>
+      </a>
+      <a href="#employees" class="nav-item" data-view="employees">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <span class="nav-label">Employees</span>
+      </a>
+      <a href="#departments" class="nav-item" data-view="departments">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
+        <span class="nav-label">Departments</span>
+      </a>
+
+      <div class="nav-section-title">Time & Compensation</div>
+      <a href="#attendance" class="nav-item" data-view="attendance">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span class="nav-label">Attendance & Leaves</span>
+      </a>
+      <a href="#salary" class="nav-item" data-view="salary">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+        <span class="nav-label">Salary Structure</span>
+      </a>
+
+      <div class="nav-section-title">Processing & Statements</div>
+      <a href="#payroll" class="nav-item" data-view="payroll">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M6 16h8"/></svg></span>
+        <span class="nav-label">Payroll Processing</span>
+        <span class="nav-badge">Run</span>
+      </a>
+      <a href="#payslips" class="nav-item" data-view="payslips">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+        <span class="nav-label">Payslips</span>
+      </a>
+      <a href="#reports" class="nav-item" data-view="reports">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+        <span class="nav-label">Reports</span>
+      </a>
+
+      <div class="nav-section-title">Administration</div>
+      <a href="#settings" class="nav-item" data-view="settings">
+        <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        <span class="nav-label">Settings</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-mini-card">
+        <div class="user-avatar">ADM</div>
+        <div class="user-info">
+          <span class="user-name current-user-name">Administrator</span>
+          <span class="user-role current-user-role">System Admin</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================
+       MAIN APP CONTAINER
+       ======================================================================== -->
+  <main class="app-main">
+
+    <!-- Top Navigation Bar -->
+    <header class="app-topbar">
+      <div class="topbar-left">
+        <button id="mobile-menu-btn" class="mobile-menu-btn" title="Open Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="topbar-search">
+          <span class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          <input type="text" id="topbar-search-input" class="search-input" placeholder="Search employees, payroll records, departments... (Press Enter)">
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div id="topbar-date-display" class="topbar-date-display">
+          <span>📅</span> Today
+        </div>
+
+        <div class="topbar-actions">
+          <button class="action-btn-icon" title="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notification-pulse"></span>
+          </button>
+        </div>
+
+        <!-- Profile Dropdown -->
+        <div class="profile-dropdown-container">
+          <div id="profile-trigger" class="profile-trigger">
+            <div class="profile-trigger-avatar">AD</div>
+            <div class="profile-trigger-details">
+              <span class="profile-trigger-name current-user-name">Administrator</span>
+              <span class="profile-trigger-role current-user-role">System Admin</span>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
+
+          <div id="profile-dropdown-menu" class="dropdown-menu-custom">
+            <a href="#settings" class="dropdown-item-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              System Settings
+            </a>
+            <div class="dropdown-divider-custom"></div>
+            <div id="dropdown-logout-btn" class="dropdown-item-custom text-danger">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Logout Session
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Scrollable Views Container -->
+    <div class="page-view-container">
+
+      <!-- ====================================================================
+           VIEW: DASHBOARD
+           ==================================================================== -->
+      <section id="view-dashboard" class="page-view active">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Executive Payroll Dashboard</h1>
+            <div class="page-subtitle">Real-time organizational statistics, disbursements, and departmental distribution</div>
+          </div>
+          <div class="page-actions">
+            <button class="btn-custom btn-primary-custom" data-quick-action="process-payroll">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Run Payroll
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Action Pills -->
+        <div class="quick-actions-bar">
+          <div class="quick-action-pill" data-quick-action="add-employee">
+            <span class="qa-icon">+</span>
+            <span>Add New Employee</span>
+          </div>
+          <div class="quick-action-pill" data-quick-action="mark-attendance">
+            <span class="qa-icon">✓</span>
+            <span>Mark Daily Attendance</span>
+          </div>
+          <div class="quick-action-pill" data-quick-action="process-payroll">
+            <span class="qa-icon">₹</span>
+            <span>Monthly Payroll Run</span>
+          </div>
+          <div class="quick-action-pill" data-quick-action="view-reports">
+            <span class="qa-icon">📊</span>
+            <span>Analytics & Tax Reports</span>
+          </div>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stat-grid">
+          <div class="stat-card stat-primary">
+            <div class="stat-info">
+              <span class="stat-label">Total Employees</span>
+              <span id="stat-total-emp" class="stat-value">--</span>
+              <span class="stat-subtext">Across all departments</span>
+            </div>
+            <div class="stat-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+          </div>
+
+          <div class="stat-card stat-success">
+            <div class="stat-info">
+              <span class="stat-label">Active Employees</span>
+              <span id="stat-active-emp" class="stat-value">--</span>
+              <span id="stat-active-sub" class="stat-subtext">--</span>
+            </div>
+            <div class="stat-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+          </div>
+
+          <div class="stat-card stat-warning">
+            <div class="stat-info">
+              <span class="stat-label">Pending Payroll</span>
+              <span id="stat-pending-payroll" class="stat-value">--</span>
+              <span id="stat-pending-sub" class="stat-subtext">--</span>
+            </div>
+            <div class="stat-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+          </div>
+
+          <div class="stat-card stat-info">
+            <div class="stat-info">
+              <span class="stat-label">Total Monthly Payroll</span>
+              <span id="stat-monthly-payroll" class="stat-value">₹ 0.00</span>
+              <span class="stat-subtext">Latest disbursed net total</span>
+            </div>
+            <div class="stat-icon-wrapper">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytical Charts -->
+        <div class="charts-grid">
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div class="card-title-custom">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Monthly Payroll Overview (Last 6 Months)
+              </div>
+            </div>
+            <div class="card-body-custom">
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-payroll-trend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div class="card-title-custom">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+                Department Distribution
+              </div>
+            </div>
+            <div class="card-body-custom">
+              <div class="chart-canvas-wrapper">
+                <canvas id="chart-dept-dist"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tables Bottom Grid -->
+        <div class="dashboard-tables-grid">
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div class="card-title-custom">Recent Payroll Transactions</div>
+              <a href="#payroll" class="btn-custom btn-secondary-custom btn-sm-custom">View All</a>
+            </div>
+            <div class="table-responsive-custom">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Emp Code</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Gross</th>
+                    <th>Net Payout</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dash-recent-payrolls-tbody">
+                  <tr><td colspan="6" class="table-empty-state">Loading transactions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div class="card-title-custom">Recently Added Staff</div>
+              <a href="#employees" class="btn-custom btn-secondary-custom btn-sm-custom">Manage Staff</a>
+            </div>
+            <div class="card-body-custom" id="dash-recent-employees-list">
+              <div class="table-empty-state">Loading staff...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: EMPLOYEES
+           ==================================================================== -->
+      <section id="view-employees" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Employee Directory</h1>
+            <div class="page-subtitle">Manage personnel profiles, compensation, designations, and banking credentials</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-add-employee" class="btn-custom btn-primary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Employee
+            </button>
+          </div>
+        </div>
+
+        <div class="card-custom">
+          <div class="table-toolbar">
+            <div class="table-filters">
+              <input type="text" id="emp-search-input" class="form-control-custom" placeholder="Search by name, code, designation, email..." style="width:260px;">
+              <select id="emp-filter-dept" class="form-select-custom" style="width:200px;">
+                <option value="all">All Departments</option>
+              </select>
+              <select id="emp-filter-status" class="form-select-custom" style="width:160px;">
+                <option value="all">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="ON_LEAVE">On Leave</option>
+                <option value="TERMINATED">Terminated</option>
+              </select>
+            </div>
+            <div id="employees-count-badge" class="dept-code-badge">0 Employee(s)</div>
+          </div>
+
+          <div class="table-responsive-custom">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Employee Profile</th>
+                  <th>Department</th>
+                  <th>Designation</th>
+                  <th>Basic Salary</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="employees-tbody">
+                <tr><td colspan="7" class="table-empty-state">Loading employees...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: DEPARTMENTS
+           ==================================================================== -->
+      <section id="view-departments" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Department Management</h1>
+            <div class="page-subtitle">Configure organizational units, team leadership, and headcount distribution</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-add-department" class="btn-custom btn-primary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Department
+            </button>
+          </div>
+        </div>
+
+        <div class="table-toolbar" style="background:transparent; padding:0 0 1.25rem 0;">
+          <div id="departments-count-badge" class="dept-code-badge">0 Department(s)</div>
+        </div>
+
+        <div id="departments-grid" class="department-cards-grid">
+          <div class="table-empty-state">Loading departments...</div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: ATTENDANCE & LEAVES
+           ==================================================================== -->
+      <section id="view-attendance" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Attendance & Leave Administration</h1>
+            <div class="page-subtitle">Track daily check-ins, manage leave applications, and automate LOP deductions</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-mark-attendance" class="btn-custom btn-secondary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Mark Attendance
+            </button>
+            <button id="btn-apply-leave" class="btn-custom btn-primary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Apply Leave
+            </button>
+          </div>
+        </div>
+
+        <div class="tab-nav">
+          <button class="tab-btn active" data-tab="attendance">Daily Attendance Log</button>
+          <button class="tab-btn" data-tab="leaves">Leave Requests & Approvals</button>
+        </div>
+
+        <!-- Tab 1: Attendance Log -->
+        <div id="tab-attendance-content">
+          <div class="card-custom">
+            <div class="table-toolbar">
+              <div class="table-filters">
+                <label class="form-label-custom" style="margin:0; align-self:center;">Attendance Date:</label>
+                <input type="date" id="attendance-filter-date" class="form-control-custom" style="width:180px;">
+              </div>
+              <div id="attendance-count-badge" class="dept-code-badge">0 Logged Record(s)</div>
+            </div>
+            <div class="table-responsive-custom">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Emp Code</th>
+                    <th>Employee Name</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="attendance-tbody">
+                  <tr><td colspan="7" class="table-empty-state">Loading attendance...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Leaves Management -->
+        <div id="tab-leaves-content" style="display:none;">
+          <div class="card-custom">
+            <div class="table-toolbar">
+              <div class="table-filters">
+                <span class="card-title-custom">Pending & Historical Leave Applications</span>
+              </div>
+              <div id="leaves-count-badge" class="dept-code-badge">0 Pending</div>
+            </div>
+            <div class="table-responsive-custom">
+              <table class="table-custom">
+                <thead>
+                  <tr>
+                    <th>Emp Code</th>
+                    <th>Employee Name</th>
+                    <th>Type</th>
+                    <th>Duration Range</th>
+                    <th>Days</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Review Action</th>
+                  </tr>
+                </thead>
+                <tbody id="leaves-tbody">
+                  <tr><td colspan="8" class="table-empty-state">Loading leave requests...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: SALARY STRUCTURE
+           ==================================================================== -->
+      <section id="view-salary" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Salary Structure & Component Configuration</h1>
+            <div class="page-subtitle">Configure corporate allowances, tax withholdings, and employee-specific compensation</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-save-salary-structure" class="btn-custom btn-primary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Save Structure
+            </button>
+          </div>
+        </div>
+
+        <div class="payroll-process-grid">
+          <!-- Left: Structure Editor -->
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div style="flex:1;">
+                <label class="form-label-custom">Select Employee to Configure:</label>
+                <select id="salary-select-emp" class="form-select-custom"></select>
+              </div>
+            </div>
+            <div class="card-body-custom">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+                <div>
+                  <h3 id="struct-emp-name" style="font-size:1.15rem; font-weight:700;">Select an Employee</h3>
+                  <div id="struct-emp-designation" style="font-size:0.82rem; color:var(--text-muted);">--</div>
+                </div>
+                <div style="width:180px;">
+                  <label class="form-label-custom">Basic Salary (Monthly ₹):</label>
+                  <input type="number" id="struct-basic-salary" class="form-control-custom" step="500" min="0">
+                </div>
+              </div>
+
+              <div class="table-responsive-custom">
+                <table class="table-custom">
+                  <thead>
+                    <tr>
+                      <th style="width:40px;">Active</th>
+                      <th>Component</th>
+                      <th>Type</th>
+                      <th>Basis</th>
+                      <th>Rate / Fixed</th>
+                      <th style="text-align:right;">Monthly (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="struct-components-tbody">
+                    <tr><td colspan="6" class="table-empty-state">Choose an employee to view components.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live Authoritative Breakdown -->
+          <div>
+            <div class="card-custom">
+              <div class="card-header-custom">
+                <div class="card-title-custom">Authoritative Salary Preview</div>
+              </div>
+              <div class="card-body-custom">
+                <div class="calculation-summary-box">
+                  <div class="calc-line-item">
+                    <span>Base Basic Salary</span>
+                    <strong id="preview-basic">₹ 0.00</strong>
+                  </div>
+                  <div class="calc-line-item earning">
+                    <span>Total Allowances (Earnings)</span>
+                    <strong id="preview-allowances">+ ₹ 0.00</strong>
+                  </div>
+                  <div class="calc-line-divider"></div>
+                  <div class="calc-line-item" style="font-weight:700; color:var(--text-main);">
+                    <span>Gross Salary</span>
+                    <strong id="preview-gross">₹ 0.00</strong>
+                  </div>
+                  <div class="calc-line-item deduction">
+                    <span>Total Deductions & Taxes</span>
+                    <strong id="preview-deductions">- ₹ 0.00</strong>
+                  </div>
+                  <div class="calc-net-total-box">
+                    <span class="calc-net-total-label">Projected Net Salary</span>
+                    <span id="preview-net" class="calc-net-total-val">₹ 0.00</span>
+                  </div>
+                </div>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.85rem; line-height:1.4;">
+                  Note: All percentage calculations (e.g. HRA 40%, PF 12%) are dynamically computed based on the employee's monthly basic pay using strict financial rounding.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Global Components Catalog -->
+        <div class="card-custom">
+          <div class="card-header-custom">
+            <div class="card-title-custom">Corporate Salary Components Catalog</div>
+            <button id="btn-add-salary-comp" class="btn-custom btn-secondary-custom btn-sm-custom">+ Add Component</button>
+          </div>
+          <div class="table-responsive-custom">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Component Name</th>
+                  <th>Type</th>
+                  <th>Calculation Rule</th>
+                  <th>Default Value</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="salary-catalog-tbody">
+                <tr><td colspan="6" class="table-empty-state">Loading component catalog...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: PAYROLL PROCESSING
+           ==================================================================== -->
+      <section id="view-payroll" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Monthly Payroll Processing</h1>
+            <div class="page-subtitle">Authoritative calculation engine with attendance-linked LOP deduction and batch disbursement</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-batch-payroll" class="btn-custom btn-secondary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Batch Process All Active
+            </button>
+          </div>
+        </div>
+
+        <!-- Processing Panel -->
+        <div class="card-custom">
+          <div class="card-header-custom">
+            <div class="card-title-custom">Generate Individual Employee Payroll</div>
+          </div>
+          <div class="card-body-custom">
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+              <div class="form-group-custom" style="margin:0;">
+                <label class="form-label-custom">Payroll Month:</label>
+                <select id="payroll-select-month" class="form-select-custom"></select>
+              </div>
+              <div class="form-group-custom" style="margin:0;">
+                <label class="form-label-custom">Payroll Year:</label>
+                <select id="payroll-select-year" class="form-select-custom"></select>
+              </div>
+              <div class="form-group-custom" style="margin:0; grid-column: span 2;">
+                <label class="form-label-custom">Select Employee:</label>
+                <select id="payroll-select-emp" class="form-select-custom"></select>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 2fr; gap:1rem; margin-bottom:1.5rem;">
+              <div class="form-group-custom" style="margin:0;">
+                <label class="form-label-custom">Manual Adjustment (₹ +/-):</label>
+                <input type="number" id="payroll-manual-adjustment" class="form-control-custom" placeholder="0.00" step="100">
+              </div>
+              <div class="form-group-custom" style="margin:0;">
+                <label class="form-label-custom">Adjustment Reason (Optional):</label>
+                <input type="text" id="payroll-adjustment-reason" class="form-control-custom" placeholder="e.g. Quarterly performance bonus, travel reimbursement">
+              </div>
+            </div>
+
+            <!-- Empty Prompt -->
+            <div id="payroll-empty-prompt" class="table-empty-state">
+              <div class="table-empty-icon">💳</div>
+              <p>Please select an employee and payroll month to generate a live computation preview.</p>
+            </div>
+
+            <!-- Live Calculation Preview Container -->
+            <div id="payroll-draft-preview-container" style="display:none;">
+              <!-- Duplicate Warning Banner -->
+              <div id="payroll-duplicate-alert" class="calc-net-total-box" style="display:none; background:var(--warning-bg); border-color:var(--warning-border); margin-bottom:1.5rem;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                  <span style="font-size:1.5rem;">⚠️</span>
+                  <div>
+                    <strong style="color:var(--warning);">Payroll Already Exists</strong>
+                    <div style="font-size:0.82rem; color:var(--text-secondary);">
+                      A payroll record for this employee for the selected period has already been generated (Status: <strong id="payroll-dup-status">--</strong>). Duplicate generation is prevented by the backend.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Split Details -->
+              <div class="payroll-process-grid">
+                <!-- Left Details -->
+                <div>
+                  <div class="payslip-meta-grid" style="grid-template-columns: 1fr 1fr; margin-bottom:1rem;">
+                    <div><span class="meta-field-label">Employee:</span> <span id="draft-emp-code" class="meta-field-val">--</span></div>
+                    <div><span class="meta-field-label">Name:</span> <span id="draft-emp-name" class="meta-field-val">--</span></div>
+                    <div><span class="meta-field-label">Department:</span> <span id="draft-emp-dept" class="meta-field-val">--</span></div>
+                    <div><span class="meta-field-label">Designation:</span> <span id="draft-emp-desig" class="meta-field-val">--</span></div>
+                    <div><span class="meta-field-label">Bank A/C:</span> <span id="draft-emp-bank" class="meta-field-val">--</span></div>
+                    <div><span class="meta-field-label">PAN Number:</span> <span id="draft-emp-pan" class="meta-field-val">--</span></div>
+                  </div>
+
+                  <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:1rem;">
+                    <div class="stat-card" style="padding:0.75rem 1rem;">
+                      <div>
+                        <div class="stat-label" style="font-size:0.7rem;">Working Days</div>
+                        <div id="draft-work-days" style="font-size:1.2rem; font-weight:700;">--</div>
+                      </div>
+                    </div>
+                    <div class="stat-card" style="padding:0.75rem 1rem;">
+                      <div>
+                        <div class="stat-label" style="font-size:0.7rem;">Present Days</div>
+                        <div id="draft-present-days" style="font-size:1.2rem; font-weight:700; color:var(--success);">--</div>
+                      </div>
+                    </div>
+                    <div class="stat-card" style="padding:0.75rem 1rem;">
+                      <div>
+                        <div class="stat-label" style="font-size:0.7rem;">Unpaid / LOP</div>
+                        <div id="draft-unpaid-days" style="font-size:1.2rem; font-weight:700; color:var(--danger);">--</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Details Table -->
+                  <div class="table-responsive-custom">
+                    <table class="table-custom">
+                      <thead>
+                        <tr>
+                          <th>Salary Component</th>
+                          <th>Category</th>
+                          <th style="text-align:right;">Amount (₹)</th>
+                        </tr>
+                      </thead>
+                      <tbody id="draft-details-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Right Summary -->
+                <div>
+                  <div class="calculation-summary-box">
+                    <div class="calc-line-item">
+                      <span>Monthly Basic Pay</span>
+                      <strong id="draft-basic-salary">₹ 0.00</strong>
+                    </div>
+                    <div class="calc-line-item earning">
+                      <span>Total Earnings / Allowances</span>
+                      <strong id="draft-total-allowances">+ ₹ 0.00</strong>
+                    </div>
+                    <div class="calc-line-divider"></div>
+                    <div class="calc-line-item" style="font-weight:700; color:var(--text-main);">
+                      <span>Gross Salary Payable</span>
+                      <strong id="draft-gross-salary">₹ 0.00</strong>
+                    </div>
+                    <div class="calc-line-item deduction">
+                      <span>Total Statutory & LOP Deductions</span>
+                      <strong id="draft-total-deductions">- ₹ 0.00</strong>
+                    </div>
+                    <div class="calc-net-total-box">
+                      <span class="calc-net-total-label">Final Net Salary</span>
+                      <span id="draft-net-salary" class="calc-net-total-val">₹ 0.00</span>
+                    </div>
+
+                    <div style="margin-top:1.5rem;">
+                      <button id="btn-process-payroll" class="btn-custom btn-primary-custom" style="width:100%; padding:0.75rem; font-size:1rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Finalize & Process Payroll
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Payroll Register Table -->
+        <div class="card-custom">
+          <div class="table-toolbar">
+            <div class="table-filters">
+              <label class="form-label-custom" style="margin:0; align-self:center;">View Monthly Register:</label>
+              <select id="payroll-filter-month" class="form-select-custom" style="width:160px;"></select>
+              <select id="payroll-filter-year" class="form-select-custom" style="width:120px;"></select>
+            </div>
+            <div id="payrolls-period-count" class="dept-code-badge">0 Processed</div>
+          </div>
+          <div class="table-responsive-custom">
+            <table class="table-custom">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Employee</th>
+                  <th>Attendance</th>
+                  <th>Gross Salary</th>
+                  <th>Deductions</th>
+                  <th>Net Payout</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="payrolls-period-tbody">
+                <tr><td colspan="8" class="table-empty-state">Loading payrolls...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: PAYSLIPS
+           ==================================================================== -->
+      <section id="view-payslips" class="page-view">
+        <div class="page-header no-print">
+          <div class="page-title-group">
+            <h1>Official Salary Payslips</h1>
+            <div class="page-subtitle">Executive salary statements with formal earnings breakdown, tax compliance, and OpenPDF export</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-print-payslip" class="btn-custom btn-secondary-custom" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Print Payslip
+            </button>
+            <button id="btn-download-payslip-pdf" class="btn-custom btn-primary-custom" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Download PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Selector Controls -->
+        <div class="card-custom no-print">
+          <div class="card-body-custom" style="padding:1rem 1.5rem;">
+            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+              <select id="payslip-filter-month" class="form-select-custom" style="width:160px;"></select>
+              <select id="payslip-filter-year" class="form-select-custom" style="width:120px;"></select>
+              <div style="flex:1; min-width:260px;">
+                <select id="payslip-select-record" class="form-select-custom"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="payslip-empty-state" class="table-empty-state no-print">
+          <div class="table-empty-icon">📄</div>
+          <p>Please select a period and employee to view and print their official salary payslip.</p>
+        </div>
+
+        <!-- Official Printed Payslip Sheet -->
+        <div id="payslip-rendered-sheet" class="payslip-preview-container" style="display:none;">
+          <div class="payslip-preview-header">
+            <div class="payslip-comp-title">PAYROLLCORP ENTERPRISE SOLUTIONS</div>
+            <div class="payslip-comp-sub">
+              Tech Innovation Hub, Block 4, Silicon City, Bengaluru, Karnataka - 560100<br>
+              Email: payroll@payrollcorp.com | Phone: +91 (080) 4567-8900
+            </div>
+            <div id="slip-period-banner" class="payslip-banner">SALARY PAYSLIP</div>
+          </div>
+
+          <!-- Metadata 4-col Grid -->
+          <div class="payslip-meta-grid">
+            <div><span class="meta-field-label">Employee Code:</span> <span id="slip-emp-code" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Employee Name:</span> <span id="slip-emp-name" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Department:</span> <span id="slip-emp-dept" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Designation:</span> <span id="slip-emp-desig" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Bank Name:</span> <span id="slip-emp-bank" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Bank A/C No:</span> <span id="slip-emp-acct" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">PAN Number:</span> <span id="slip-emp-pan" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Payment Status:</span> <span id="slip-emp-status" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Working Days:</span> <span id="slip-work-days" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Present Days:</span> <span id="slip-present-days" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Unpaid Leaves:</span> <span id="slip-unpaid-days" class="meta-field-val">--</span></div>
+            <div><span class="meta-field-label">Payment Date:</span> <span id="slip-pay-date" class="meta-field-val">--</span></div>
+          </div>
+
+          <!-- Earnings vs Deductions Split Table -->
+          <div class="payslip-tables-split">
+            <!-- Earnings Table -->
+            <div class="payslip-table-wrapper">
+              <table class="payslip-subtable">
+                <thead>
+                  <tr>
+                    <th>EARNINGS & ALLOWANCES</th>
+                    <th style="text-align:right;">AMOUNT (₹)</th>
+                  </tr>
+                </thead>
+                <tbody id="slip-earnings-tbody"></tbody>
+                <tfoot>
+                  <tr class="payslip-total-row">
+                    <td>TOTAL GROSS EARNINGS</td>
+                    <td id="slip-gross-salary" style="text-align:right;">₹ 0.00</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- Deductions Table -->
+            <div class="payslip-table-wrapper">
+              <table class="payslip-subtable">
+                <thead>
+                  <tr>
+                    <th>DEDUCTIONS & TAXES</th>
+                    <th style="text-align:right;">AMOUNT (₹)</th>
+                  </tr>
+                </thead>
+                <tbody id="slip-deductions-tbody"></tbody>
+                <tfoot>
+                  <tr class="payslip-total-row">
+                    <td>TOTAL DEDUCTIONS</td>
+                    <td id="slip-total-deductions" style="text-align:right;">₹ 0.00</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Net Salary Highlight -->
+          <div class="payslip-net-highlight">
+            <div>
+              <div class="net-highlight-title">NET SALARY PAYABLE:</div>
+              <div id="slip-net-words" class="net-highlight-words">--</div>
+            </div>
+            <div id="slip-net-salary" class="net-highlight-amount">₹ 0.00</div>
+          </div>
+
+          <!-- Signatures -->
+          <div class="payslip-signatures">
+            <div class="sig-box">
+              <div class="sig-line"></div>
+              Employee Signature
+            </div>
+            <div class="sig-box">
+              <div class="sig-line"></div>
+              Authorized Signatory<br>PayrollCorp Technologies
+            </div>
+          </div>
+
+          <div class="payslip-footer-note">
+            Note: This is an official computer-generated payslip generated from the Employee Payroll Management System. All tax deductions are subject to year-end statutory audit.
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: REPORTS
+           ==================================================================== -->
+      <section id="view-reports" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>Reports & Financial Statements</h1>
+            <div class="page-subtitle">Statutory compliance reports, annual disbursement analytics, and data exports</div>
+          </div>
+          <div class="page-actions">
+            <button id="btn-export-csv" class="btn-custom btn-secondary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+            <button id="btn-export-pdf" class="btn-custom btn-primary-custom">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              Export PDF Report
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="card-custom">
+          <div class="card-body-custom" style="padding:1rem 1.5rem;">
+            <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+              <div>
+                <label class="form-label-custom" style="margin:0 0 0.25rem 0;">Report Type:</label>
+                <select id="report-type" class="form-select-custom" style="width:220px;">
+                  <option value="monthly">Monthly Payroll Register</option>
+                  <option value="annual">Annual Payroll Summary</option>
+                </select>
+              </div>
+              <div id="report-month-group">
+                <label class="form-label-custom" style="margin:0 0 0.25rem 0;">Month:</label>
+                <select id="report-month" class="form-select-custom" style="width:160px;"></select>
+              </div>
+              <div>
+                <label class="form-label-custom" style="margin:0 0 0.25rem 0;">Year:</label>
+                <select id="report-year" class="form-select-custom" style="width:120px;"></select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report KPI Metrics -->
+        <div class="stat-grid">
+          <div class="stat-card stat-primary">
+            <div class="stat-info">
+              <span id="rep-stat-1-lbl" class="stat-label">Employees Paid</span>
+              <span id="rep-stat-1-val" class="stat-value">0</span>
+            </div>
+          </div>
+          <div class="stat-card stat-info">
+            <div class="stat-info">
+              <span id="rep-stat-2-lbl" class="stat-label">Gross Amount</span>
+              <span id="rep-stat-2-val" class="stat-value">₹ 0.00</span>
+            </div>
+          </div>
+          <div class="stat-card stat-danger">
+            <div class="stat-info">
+              <span id="rep-stat-3-lbl" class="stat-label">Deductions</span>
+              <span id="rep-stat-3-val" class="stat-value">₹ 0.00</span>
+            </div>
+          </div>
+          <div class="stat-card stat-success">
+            <div class="stat-info">
+              <span id="rep-stat-4-lbl" class="stat-label">Net Disbursed</span>
+              <span id="rep-stat-4-val" class="stat-value">₹ 0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="card-custom">
+          <div class="card-header-custom">
+            <div class="card-title-custom">Analytical Visualization</div>
+          </div>
+          <div class="card-body-custom">
+            <div class="chart-canvas-wrapper">
+              <canvas id="chart-report-visual"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Table -->
+        <div class="card-custom">
+          <div class="card-header-custom">
+            <div class="card-title-custom">Report Itemized Register</div>
+          </div>
+          <div class="table-responsive-custom">
+            <table class="table-custom">
+              <thead id="report-table-thead"></thead>
+              <tbody id="report-table-tbody">
+                <tr><td colspan="10" class="table-empty-state">Loading report data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW: SETTINGS
+           ==================================================================== -->
+      <section id="view-settings" class="page-view">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h1>System Settings & Diagnostics</h1>
+            <div class="page-subtitle">Runtime database connectivity, corporate metadata, and security administration</div>
+          </div>
+        </div>
+
+        <div class="charts-grid">
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div class="card-title-custom">Database & Runtime Diagnostics</div>
+            </div>
+            <div class="card-body-custom">
+              <div class="payslip-meta-grid" style="grid-template-columns: 1fr; gap:1rem;">
+                <div><span class="meta-field-label">Active Database Engine:</span> <span id="set-db-mode" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">JDBC Connection String:</span> <span id="set-db-url" class="meta-field-val" style="word-break:break-all;">--</span></div>
+                <div><span class="meta-field-label">Java Runtime Environment:</span> <span id="set-java-version" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">JVM Memory Heap Utilization:</span> <span id="set-memory" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">System Application Version:</span> <span id="set-app-version" class="meta-field-val">--</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-custom">
+            <div class="card-header-custom">
+              <div class="card-title-custom">Corporate Organization Profile</div>
+            </div>
+            <div class="card-body-custom">
+              <div class="payslip-meta-grid" style="grid-template-columns: 1fr; gap:0.85rem;">
+                <div><span class="meta-field-label">Company Legal Name:</span> <span id="set-company-name" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">Registered Office:</span> <span id="set-company-address" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">Corporate Email:</span> <span id="set-company-email" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">Contact Telephone:</span> <span id="set-company-phone" class="meta-field-val">--</span></div>
+                <div><span class="meta-field-label">Base Currency Standard:</span> <span id="set-currency" class="meta-field-val">--</span></div>
+              </div>
+              <div style="margin-top:1.5rem;">
+                <button id="btn-change-password" class="btn-custom btn-secondary-custom">Change Password</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ==========================================================================
+     MODALS
+     ========================================================================== -->
+
+<!-- Modal: Employee Form (Add / Edit) -->
+<div id="modal-employee-form" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom modal-dialog-lg">
+    <div class="modal-header-custom">
+      <div id="modal-employee-title" class="modal-title-custom">Add New Employee</div>
+      <button class="modal-close-btn" data-close-modal="modal-employee-form">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <form id="employee-form">
+        <input type="hidden" id="emp-form-id">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:1rem;">
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Employee Code</label>
+            <input type="text" id="emp-form-code" class="form-control-custom" required placeholder="EMP1001">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">First Name</label>
+            <input type="text" id="emp-form-first-name" class="form-control-custom" required placeholder="John">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Last Name</label>
+            <input type="text" id="emp-form-last-name" class="form-control-custom" required placeholder="Doe">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Work Email</label>
+            <input type="email" id="emp-form-email" class="form-control-custom" required placeholder="john.doe@company.com">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Phone (10 Digits)</label>
+            <input type="tel" id="emp-form-phone" class="form-control-custom" required placeholder="9876543210">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Department</label>
+            <select id="emp-form-dept" class="form-select-custom" required></select>
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Designation</label>
+            <input type="text" id="emp-form-designation" class="form-control-custom" required placeholder="Senior Engineer">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Date of Joining</label>
+            <input type="date" id="emp-form-doj" class="form-control-custom" required>
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Employment Status</label>
+            <select id="emp-form-status" class="form-select-custom">
+              <option value="ACTIVE">Active</option>
+              <option value="ON_LEAVE">On Leave</option>
+              <option value="TERMINATED">Terminated</option>
+            </select>
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Monthly Basic Salary (₹)</label>
+            <input type="number" id="emp-form-basic-salary" class="form-control-custom" step="500" min="0" required placeholder="50000">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Bank Name</label>
+            <input type="text" id="emp-form-bank-name" class="form-control-custom" required placeholder="HDFC Bank">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Bank Account Number</label>
+            <input type="text" id="emp-form-bank-account" class="form-control-custom" required placeholder="50100439281723">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Bank IFSC Code</label>
+            <input type="text" id="emp-form-bank-ifsc" class="form-control-custom" required placeholder="HDFC0001234">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">PAN Number</label>
+            <input type="text" id="emp-form-pan" class="form-control-custom" required placeholder="ABCDE1234F">
+          </div>
+          <div class="form-group-custom" style="grid-column: 1/-1;">
+            <label class="form-label-custom">Residential Address</label>
+            <textarea id="emp-form-address" class="form-control-custom" rows="2" placeholder="Street, City, Postal Code"></textarea>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-employee-form">Cancel</button>
+      <button id="btn-save-employee" class="btn-custom btn-primary-custom">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: View Employee Details -->
+<div id="modal-employee-details" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom modal-dialog-lg">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Employee Full Profile</div>
+      <button class="modal-close-btn" data-close-modal="modal-employee-details">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border-color);">
+        <div>
+          <h2 id="view-emp-name" style="font-size:1.4rem; font-weight:700;">--</h2>
+          <div style="color:var(--text-muted); font-size:0.85rem;">
+            <span id="view-emp-code" class="dept-code-badge">--</span> &bull;
+            <span id="view-emp-designation">--</span> &bull;
+            <span id="view-emp-dept">--</span>
+          </div>
+        </div>
+        <div id="view-emp-status">--</div>
+      </div>
+
+      <div class="payslip-meta-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom:1.5rem;">
+        <div><span class="meta-field-label">Email:</span> <span id="view-emp-email" class="meta-field-val">--</span></div>
+        <div><span class="meta-field-label">Phone:</span> <span id="view-emp-phone" class="meta-field-val">--</span></div>
+        <div><span class="meta-field-label">Joining Date:</span> <span id="view-emp-doj" class="meta-field-val">--</span></div>
+        <div><span class="meta-field-label">Bank Account:</span> <span id="view-emp-bank" class="meta-field-val">--</span></div>
+        <div><span class="meta-field-label">IFSC Code:</span> <span id="view-emp-ifsc" class="meta-field-val">--</span></div>
+        <div><span class="meta-field-label">PAN Number:</span> <span id="view-emp-pan" class="meta-field-val">--</span></div>
+        <div style="grid-column: 1/-1;"><span class="meta-field-label">Address:</span> <span id="view-emp-address" class="meta-field-val">--</span></div>
+      </div>
+
+      <h4 style="font-size:0.95rem; font-weight:700; margin-bottom:0.75rem;">Active Compensation Breakdown</h4>
+      <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:1.25rem;">
+        <div class="stat-card" style="padding:0.65rem 0.85rem;"><div class="stat-label">Basic</div><div id="view-emp-basic" style="font-weight:700;">₹ 0</div></div>
+        <div class="stat-card" style="padding:0.65rem 0.85rem;"><div class="stat-label">Gross</div><div id="view-emp-gross" style="font-weight:700;">₹ 0</div></div>
+        <div class="stat-card" style="padding:0.65rem 0.85rem;"><div class="stat-label">Deductions</div><div id="view-emp-deductions" style="font-weight:700; color:var(--danger);">₹ 0</div></div>
+        <div class="stat-card" style="padding:0.65rem 0.85rem;"><div class="stat-label">Net Salary</div><div id="view-emp-net" style="font-weight:700; color:var(--success);">₹ 0</div></div>
+      </div>
+
+      <div class="table-responsive-custom">
+        <table class="table-custom">
+          <thead>
+            <tr>
+              <th>Component Name</th>
+              <th>Type</th>
+              <th>Rule</th>
+              <th style="text-align:right;">Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody id="view-emp-components-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-employee-details">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Department Form -->
+<div id="modal-department-form" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div id="modal-dept-title" class="modal-title-custom">Add Department</div>
+      <button class="modal-close-btn" data-close-modal="modal-department-form">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <form id="department-form">
+        <input type="hidden" id="dept-form-id">
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Department Code</label>
+          <input type="text" id="dept-form-code" class="form-control-custom" required placeholder="ENG">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Department Name</label>
+          <input type="text" id="dept-form-name" class="form-control-custom" required placeholder="Software Engineering">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Description</label>
+          <textarea id="dept-form-desc" class="form-control-custom" rows="3" placeholder="Department responsibilities and function"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-department-form">Cancel</button>
+      <button id="btn-save-department" class="btn-custom btn-primary-custom">Save Department</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Mark Attendance -->
+<div id="modal-attendance-form" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Log Daily Attendance</div>
+      <button class="modal-close-btn" data-close-modal="modal-attendance-form">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <form id="attendance-form">
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Employee</label>
+          <select id="att-form-emp" class="form-select-custom" required></select>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Attendance Date</label>
+          <input type="date" id="att-form-date" class="form-control-custom" required>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Status</label>
+          <select id="att-form-status" class="form-select-custom">
+            <option value="PRESENT">Present (Full Day)</option>
+            <option value="HALF_DAY">Half Day</option>
+            <option value="ABSENT">Absent</option>
+            <option value="LEAVE">On Leave</option>
+          </select>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="form-group-custom">
+            <label class="form-label-custom">Check In Time</label>
+            <input type="time" id="att-form-checkin" class="form-control-custom" value="09:00">
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom">Check Out Time</label>
+            <input type="time" id="att-form-checkout" class="form-control-custom" value="18:00">
+          </div>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Notes (Optional)</label>
+          <input type="text" id="att-form-notes" class="form-control-custom" placeholder="On-time check-in">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-attendance-form">Cancel</button>
+      <button id="btn-save-attendance" class="btn-custom btn-primary-custom">Log Attendance</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Apply Leave -->
+<div id="modal-leave-form" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Apply Leave Request</div>
+      <button class="modal-close-btn" data-close-modal="modal-leave-form">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <form id="leave-form">
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Employee</label>
+          <select id="leave-form-emp" class="form-select-custom" required></select>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Leave Type</label>
+          <select id="leave-form-type" class="form-select-custom">
+            <option value="CASUAL">Casual Leave (Paid)</option>
+            <option value="SICK">Sick Leave (Paid)</option>
+            <option value="PRIVILEGE">Privilege / Annual Leave (Paid)</option>
+            <option value="UNPAID">Unpaid Leave (Loss of Pay Deduction)</option>
+          </select>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Start Date</label>
+            <input type="date" id="leave-form-start" class="form-control-custom" required>
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">End Date</label>
+            <input type="date" id="leave-form-end" class="form-control-custom" required>
+          </div>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Reason</label>
+          <textarea id="leave-form-reason" class="form-control-custom" rows="3" required placeholder="Specify reason for leave application"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-leave-form">Cancel</button>
+      <button id="btn-save-leave" class="btn-custom btn-primary-custom">Submit Leave</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Review Leave -->
+<div id="modal-leave-review" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Review Leave Request</div>
+      <button class="modal-close-btn" data-close-modal="modal-leave-review">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <input type="hidden" id="review-leave-id">
+      <input type="hidden" id="review-leave-status">
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+        <span>Decision:</span>
+        <span id="review-leave-status-badge" class="status-pill">--</span>
+      </div>
+      <div class="form-group-custom">
+        <label class="form-label-custom">Reviewer Comments</label>
+        <textarea id="review-leave-comments" class="form-control-custom" rows="3"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-leave-review">Cancel</button>
+      <button id="btn-submit-leave-review" class="btn-custom btn-primary-custom">Submit Review</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Salary Component -->
+<div id="modal-salary-comp-form" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Add Global Salary Component</div>
+      <button class="modal-close-btn" data-close-modal="modal-salary-comp-form">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <form id="salary-comp-form">
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Component Code</label>
+          <input type="text" id="comp-form-code" class="form-control-custom" required placeholder="e.g. BONUS">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Component Name</label>
+          <input type="text" id="comp-form-name" class="form-control-custom" required placeholder="e.g. Performance Bonus">
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Type</label>
+            <select id="comp-form-type" class="form-select-custom">
+              <option value="EARNING">Earning (Allowance)</option>
+              <option value="DEDUCTION">Deduction (Statutory/Tax)</option>
+            </select>
+          </div>
+          <div class="form-group-custom">
+            <label class="form-label-custom form-label-required">Calculation Basis</label>
+            <select id="comp-form-calc-type" class="form-select-custom">
+              <option value="FIXED_AMOUNT">Fixed Monthly Amount (₹)</option>
+              <option value="PERCENTAGE_OF_BASIC">Percentage of Basic (%)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Default Rate / Amount</label>
+          <input type="number" id="comp-form-default-val" class="form-control-custom" step="0.01" min="0" required placeholder="2500">
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom">Description</label>
+          <textarea id="comp-form-desc" class="form-control-custom" rows="2" placeholder="Corporate statutory or incentive purpose"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-salary-comp-form">Cancel</button>
+      <button id="btn-save-salary-comp" class="btn-custom btn-primary-custom">Save Component</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Mark Payroll Paid -->
+<div id="modal-mark-paid" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Mark Payroll as Paid</div>
+      <button class="modal-close-btn" data-close-modal="modal-mark-paid">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <input type="hidden" id="pay-modal-id">
+      <div class="calculation-summary-box" style="margin-bottom:1.25rem;">
+        <div class="calc-line-item">
+          <span>Employee:</span>
+          <strong id="pay-modal-emp">--</strong>
+        </div>
+        <div class="calc-line-item">
+          <span>Net Salary Credited:</span>
+          <strong id="pay-modal-amount" style="color:var(--success); font-size:1.15rem;">₹ 0.00</strong>
+        </div>
+      </div>
+      <div class="form-group-custom">
+        <label class="form-label-custom form-label-required">Payment Date</label>
+        <input type="date" id="pay-modal-date" class="form-control-custom" required>
+      </div>
+      <div class="form-group-custom">
+        <label class="form-label-custom form-label-required">Payment Method</label>
+        <select id="pay-modal-method" class="form-select-custom">
+          <option value="BANK_TRANSFER">Direct Bank Transfer (NEFT/RTGS)</option>
+          <option value="CHEQUE">Corporate Cheque</option>
+          <option value="CASH">Cash Disbursement</option>
+        </select>
+      </div>
+      <div class="form-group-custom">
+        <label class="form-label-custom form-label-required">Payment Reference / UTR Number</label>
+        <input type="text" id="pay-modal-ref" class="form-control-custom" required placeholder="NEFT-HDFC-98234101">
+      </div>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-mark-paid">Cancel</button>
+      <button id="btn-submit-mark-paid" class="btn-custom btn-success-custom">Confirm Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Change Password -->
+<div id="modal-change-password" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom">
+    <div class="modal-header-custom">
+      <div class="modal-title-custom">Update Account Password</div>
+      <button class="modal-close-btn" data-close-modal="modal-change-password">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <form id="change-password-form">
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Current Password</label>
+          <input type="password" id="pass-form-current" class="form-control-custom" required>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">New Password (Min 6 Characters)</label>
+          <input type="password" id="pass-form-new" class="form-control-custom" required>
+        </div>
+        <div class="form-group-custom">
+          <label class="form-label-custom form-label-required">Confirm New Password</label>
+          <input type="password" id="pass-form-confirm" class="form-control-custom" required>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-change-password">Cancel</button>
+      <button id="btn-submit-change-password" class="btn-custom btn-primary-custom">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Generic Confirmation Dialog -->
+<div id="modal-confirm" class="modal-backdrop-custom">
+  <div class="modal-dialog-custom" style="max-width:440px;">
+    <div class="modal-header-custom">
+      <div id="confirm-modal-title" class="modal-title-custom">Confirm Action</div>
+      <button class="modal-close-btn" data-close-modal="modal-confirm">&times;</button>
+    </div>
+    <div class="modal-body-custom">
+      <p id="confirm-modal-message" style="color:var(--text-secondary); line-height:1.5;">Are you sure?</p>
+    </div>
+    <div class="modal-footer-custom">
+      <button class="btn-custom btn-secondary-custom" data-close-modal="modal-confirm">Cancel</button>
+      <button id="confirm-modal-btn" class="btn-custom btn-primary-custom">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Notifications Container -->
+<div id="toast-container" class="toast-container-custom"></div>
+
+<!-- JavaScript Application Modules -->
+<script src="js/api.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/employees.js"></script>
+<script src="js/departments.js"></script>
+<script src="js/attendance.js"></script>
+<script src="js/salary.js"></script>
+<script src="js/payroll.js"></script>
+<script src="js/payslips.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>

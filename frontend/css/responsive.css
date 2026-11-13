@@ -1,0 +1,170 @@
+/* ==========================================================================
+   Responsive Adaptations & Print Stylesheet
+   ========================================================================== */
+
+/* Laptop & Tablet (< 1024px) */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 230px;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-tables-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .payroll-process-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Tablet & Mobile (< 768px) */
+@media (max-width: 768px) {
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    height: 100vh;
+    width: 260px;
+    z-index: 2500;
+    box-shadow: var(--shadow-modal);
+    transition: left 0.3s ease;
+  }
+  
+  .app-sidebar.mobile-open {
+    left: 0;
+  }
+  
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.6);
+    z-index: 2400;
+  }
+  
+  .sidebar-backdrop.active {
+    display: block;
+  }
+  
+  .mobile-menu-btn {
+    display: flex;
+  }
+  
+  .app-topbar {
+    padding: 0 1rem;
+  }
+  
+  .page-view-container {
+    padding: 1rem;
+  }
+  
+  .topbar-search {
+    display: none; /* Can be opened in modal if needed or simplified */
+  }
+  
+  .topbar-date-display {
+    display: none;
+  }
+  
+  .profile-trigger-details {
+    display: none;
+  }
+  
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .payslip-meta-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .payslip-tables-split {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .table-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Sidebar Collapsed State (Desktop) */
+body.sidebar-collapsed .app-sidebar {
+  width: var(--sidebar-collapsed-width);
+}
+
+body.sidebar-collapsed .brand-text,
+body.sidebar-collapsed .nav-section-title,
+body.sidebar-collapsed .nav-label,
+body.sidebar-collapsed .nav-badge,
+body.sidebar-collapsed .user-info {
+  display: none !important;
+}
+
+body.sidebar-collapsed .nav-item {
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+body.sidebar-collapsed .brand-wrapper {
+  justify-content: center;
+}
+
+body.sidebar-collapsed .user-mini-card {
+  justify-content: center;
+}
+
+/* Print Stylesheet for High-Fidelity Payslips & Reports */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  .app-sidebar,
+  .app-topbar,
+  .quick-actions-bar,
+  .page-header,
+  .no-print,
+  .modal-backdrop-custom,
+  .toast-container-custom {
+    display: none !important;
+  }
+  
+  #app-container {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  .app-main {
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+  
+  .page-view-container {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  
+  .payslip-preview-container {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}
